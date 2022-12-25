@@ -13,16 +13,29 @@ use QLHangHoa
 select * from KhachHang
 select * from ChiTietXuat
 
+--1. Tạo CSDL cho lược đồ trên. 
+--Dựa vào dữ liệu đã cho, sinh viên xác định kiểu dữ liệu, kích thước dữ liệu, các ràng 
+--buộc khóa chính, khóa ngoại phù hợp với dữ liệu và các ràng buộc dữ liệu khác.
+--2. Import dữ liệu từ file excel QLHanghoa.xls. Chú ý kiểu và kích thước dữ liệu của các 
+--trường. (sử dụng công cụ để thêm dữ liệu từ excel file)
+--3. Thêm ràng buộc Default là ngày hiện tại vào ngày xuất của bảng Phiếu xuất. Nhập thử dữ
+--liệu để kiểm tra
+
 --khachhang
 alter table KhachHang alter column MaKH char(5) not null
 alter table KhachHang alter column TenKH nvarchar(20)
 alter table KhachHang alter column DiaChi nvarchar(10)
-alter table KhachHang alter column DienThoai int --chuarangbuoc <=11
+alter table KhachHang alter column DienThoai int 
+alter table KhachHang add check(DienThoai<=11)  
+
+alter table KhachHang add constraint PK_KhachHang primary key(MaKH)
 
 --nhacungcap
 alter table NhaCungCap alter column MaNCC char(2) not null
 alter table NhaCungCap alter column TenNCC nvarchar(15)
 alter table NhaCungCap alter column DiaChi nvarchar(40)
+
+alter table NhaCungCap add constraint PK_NhaCungCap primary key(MaNCC)
 
 --mathang
 alter table MatHang alter column MaMH char(2) not null
@@ -32,25 +45,57 @@ alter table MatHang alter column MaNCC char(2)
 alter table MatHang alter column Gia float(15)
 alter table MatHang alter column SLHienCo int
 
+alter table MatHang add check(Gia>0) , check(SLHienCo>=0)
+
+alter table MatHang add constraint PK_MatHang primary key(MaMH)
+
 --dondathang
 alter table DonDatHang alter column MaDH char(4) not null
 alter table DonDatHang alter column NgayDat date
 alter table DonDatHang alter column MaKH char(5)
 
---chitietdondathang
-alter table ChiTietDonDatHang alter column MADH char(4) not null
-alter table ChiTietDonDatHang alter column MaMH char(2)
-alter table ChiTietDonDatHang alter column SLDH int
+--*default(getdate)
+alter table DonDatHang add constraint PK_DonDatHang primary key(MaDH)
 
+--chitietdondathang
+alter table ChiTietDonDatHang alter column MADH char(4) not null 
+alter table ChiTietDonDatHang alter column MaMH char(2)
+alter table ChiTietDonDatHang alter column SLDH int not null
+
+alter table ChiTietDonDatHang add check(SLDH >= 1) --*
+alter table ChiTietDonDatHang add constraint PK_ChiTietDonDatHang primary key(MADH)
+alter table ChiTietDonDatHang add constraint FK_ctddh_MatHang foreign key(MaMH) references MatHang(MaMH)
 --phieuxuat
 alter table PhieuXuat alter column SoPX char(4) not null
 alter table PhieuXuat alter column NgayXuat date
 alter table PhieuXuat alter column MaDH char(4)
 
+alter table PhieuXuat add constraint PK_PhieuXuat primary key(SoPX)
 
-create table CHITIETXUAT
-(
-	SOPX char(4),
-	MAMH char(2),
-	SLXUAT int,
-)
+--chitietxuat
+alter table ChiTietXuat alter column SoPX char(4) not null
+alter table ChiTietXuat alter column MaMH char(2)
+alter table ChiTietXuat alter column SLXuat int
+
+alter table ChiTietXuat add constraint FK_ctx_PhieuXuat foreign key(SoPX) references PhieuXuat(SoPX)
+alter table ChiTietXuat add constraint FK_ctx_MatHang foreign key(MaMH) references MatHang(MaMH)
+
+
+--4. Tính số lần mua hàng của khách hàng có mã KH là ‘00001’
+select KhachHang.MaKH, sum(ChiTietDonDatHang.SLDH) as 'tongsolandathang'
+from KhachHang, DonDatHang, ChiTietDonDatHang
+where KhachHang.MaKH = DonDatHang.MaKH and ChiTietDonDatHang.MADH = DonDatHang.MaDH
+and KhachHang.MaKH = '00001'
+group by KhachHang.MaKH
+--5. Tìm những Nhà cung cấp chưa cung cấp hàng lần nào.
+select NhaCungCap.MaNCC, NhaCungCap.TenNCC 
+from MatHang, NhaCungCap
+where MatHang.MaNCC = NhaCungCap.MaNCC
+group by NhaCungCap.MaNCC, NhaCungCap.TenNCC 
+--chi hien nhung nha cung cap da cung cap hang
+--6. Tìm Phiếu xuất có tổng trị giá lớn nhất.
+select ChiTietXuat.MaMH, (ChiTietXuat.SLXuat*MatHang.Gia) as 'tongsotienlonnhat'
+from PhieuXuat, ChiTietXuat, ChiTietDonDatHang
+where PhieuXuat.MaDH = ChiTietDonDatHang.MADH and ChiTietDonDatHang.MaMH = ChiTietDonDatHang.MaMH
+group by ChiTietXuat.MaMH
+--7. Cho biết thông tin những mặt hàng chưa được xuất trong năm hiện tại
