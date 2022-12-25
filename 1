@@ -1,0 +1,56 @@
+
+drop database QLHangHoa
+
+create database QLHangHoa
+
+on (name=qlhanghoa_data,
+	filename='d:\QLHangHoa\qlhanghoa_data.mdf')
+log on (name=qlhanghoa_log,
+	filename='d:\QLHangHoa\qlhanghoa_log.ldf')
+
+use QLHangHoa
+
+select * from KhachHang
+select * from ChiTietXuat
+
+--khachhang
+alter table KhachHang alter column MaKH char(5) not null
+alter table KhachHang alter column TenKH nvarchar(20)
+alter table KhachHang alter column DiaChi nvarchar(10)
+alter table KhachHang alter column DienThoai int --chuarangbuoc <=11
+
+--nhacungcap
+alter table NhaCungCap alter column MaNCC char(2) not null
+alter table NhaCungCap alter column TenNCC nvarchar(15)
+alter table NhaCungCap alter column DiaChi nvarchar(40)
+
+--mathang
+alter table MatHang alter column MaMH char(2) not null
+alter table MatHang alter column TenMH nvarchar(20)
+alter table MatHang alter column DVT nvarchar(4)
+alter table MatHang alter column MaNCC char(2)
+alter table MatHang alter column Gia float(15)
+alter table MatHang alter column SLHienCo int
+
+--dondathang
+alter table DonDatHang alter column MaDH char(4) not null
+alter table DonDatHang alter column NgayDat date
+alter table DonDatHang alter column MaKH char(5)
+
+--chitietdondathang
+alter table ChiTietDonDatHang alter column MADH char(4) not null
+alter table ChiTietDonDatHang alter column MaMH char(2)
+alter table ChiTietDonDatHang alter column SLDH int
+
+--phieuxuat
+alter table PhieuXuat alter column SoPX char(4) not null
+alter table PhieuXuat alter column NgayXuat date
+alter table PhieuXuat alter column MaDH char(4)
+
+
+create table CHITIETXUAT
+(
+	SOPX char(4),
+	MAMH char(2),
+	SLXUAT int,
+)
