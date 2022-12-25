@@ -1,0 +1,70 @@
+create database QLHangHoa
+on (name=qlhanghoa_date,
+	filename='D:\qlhanghoa_data.mdf')
+log on (name=qlhanghoa_log,
+	filename='D:\qlhanghoa_log.ldf')
+
+use QLHangHoa
+
+drop database QLHangHoa
+
+create table KHACHHANG
+(	MAKH CHAR(5) not null,  
+	TENKH NVARCHAR(20),
+	DIACHI NVARCHAR(10),
+	DIENTHOAI INT, check(DIENTHOAI<=11),
+	PRIMARY KEY (MAKH), 
+)
+SELECT *FROM KHACHHANG
+drop table KHACHHANG
+
+CREATE TABLE NHACUNGCAP
+(
+	MANCC CHAR(2) not null, PRIMARY KEY(MANCC),
+	TENNCC nvarchar(15),
+	DIACHI NVARCHAR(40),
+)
+
+CREATE TABLE MATHANG
+(
+	MAMH CHAR(2) not null, 
+	TENMH NVARCHAR(20),
+	DVT nvarchar(4),
+	MANCC CHAR(2), 
+	GIA float(15) check(GIA>0), 
+	SLHIENCO int check(SLHIENCO>=0),
+	PRIMARY KEY(MAMH),
+)
+
+drop table MATHANG
+
+CREATE TABLE DONDATHANG
+(	
+	MADH CHAR(4) not null, PRIMARY KEY (MADH),
+	NGAYDAT date,
+	MAKH CHAR(5),
+)
+
+create table CHITIETDONDATHANG
+(
+	MADH char(4) not null, 
+	MAMH char(2), 
+	SLDH int check(SLDH>=1) default(1),
+)
+create table PHIEUXUAT
+(
+	SOPX char(4) not null, 
+	NGAYXUAT date,
+	MADH char(4),
+	primary key(SOPX),
+)
+create table CHITIETXUAT
+(
+	SOPX char(4),
+	MAMH char(2),
+	SLXUAT int,
+)
+
+
+
+SELECT * FROM  KHACHHANG
